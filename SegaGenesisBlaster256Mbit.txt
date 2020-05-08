@@ -1,0 +1,24 @@
+RetroStage 256Mbit Sega Genesis Blaster dev notes
+----------------------------------------------------------------
+
+ The mapper chip on-board uses a extension of the mapper created by Sega for SSF2. The mapper breaks the 256Mbit ROM into multiple 4Mbit chunks of data, and maps them into different address ranges. 
+
+The first 4Mbit of ROM is always located at 0x000000-0x07FFFF, and is used for vector tables and whatever else cannot be re-mapped. The other 4Mbit chunks are mapped into anywhere from 0x080000-0x3FFFFF. These are accessible by writing to specific registers in the mapper:
+
+0xA130F3 = 0x080000 - 0x0FFFFF
+0xA130F5 = 0x100000 - 0x17FFFF
+0xA130F7 = 0x180000 - 0x1FFFFF
+0xA130F9 = 0x200000 - 0x27FFFF
+0xA130FB = 0x280000 - 0x2FFFFF
+0xA130FD = 0x300000 - 0x37FFFF
+0xA130FF = 0x380000 - 0x3FFFFF
+
+These registers can be controlled using byte writes. Writing a value of 0x01 to register 0xA130F3 would make ROM 0x080000-0x0FFFFF visible at console 0x080000-0x0FFFFF, but writing a 0x01 to register 0xA130FF would make that same data visible at console 0x380000-0x3FFFFF. Just increment the value you're writing to change the bank (writing 0x02, 0x03, etc) and write it to whatever address you want it to be visible at through the appropriate register.
+
+SRAM is handled the way it is normally on a regular Genesis cart, only accessible in the 0x200000-0x3FFFFF range. But you have to write to a register to enable or disable the SRAM in that range. Here is how that should look:
+
+0xA130F1 = writing 0x00 disables SRAM and enables the ROM, whereas writing 0x01 enables SRAM and disables the ROM.
+
+If there are any questions you can contact me via email "support@retrostage.net".
+----------------------------------------------------------------
+(C) 2019 RetroStage Computing
